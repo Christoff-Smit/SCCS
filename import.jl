@@ -83,7 +83,7 @@ println(p[1,:])
 
 # imshow(flipud(log10(p[:,1])), extent=[first(t), last(t), fs*first(f), fs*last(f)], aspect="auto")
 display(plot(reverse(p,dims=1), xscale=:log10,
-xlims=(10^3,10^4)))
+xlims=(10^2,10^5)))
 println(dfeqrer)
 
 
