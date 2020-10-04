@@ -1,0 +1,51 @@
+#F 3.0 - Operate SCCS Context
+#####################################################################################
+Initialize the SCCS: (F 3.1)
+	Import (third-party) Julia packages
+
+	Establish connection with microphone array (F 3.1.1 - Connect to mic array)
+
+	Perform initial I/O user interaction procedure:
+		Display Welcome message
+		Inform user of all functionalities and controls
+		Obtain user settings: (F 3.1.2)
+			Login Details
+			State & Mode of operation
+			Train/re-train classifier?
+			Perform Self Test?
+			
+	if alreadyTrained and not reTrain
+		Load the (pre-trained) classifier (F 3.1.3)
+	else
+		train classifier (F 3.1.4) and keep user informed on progress
+
+	if selfTest
+		Perform self-test: (F 3.1.5)
+			run classifier against the test set
+			if selfTest_Fail
+				inform user
+				train again using the current (updated) training set
+				test classifier again
+				if selfTest_Fail again
+					disable SCCS and contact the supervising engineer
+			if selfTest_Pass
+				inform user that the SCCS is in operational condition
+
+
+if ActiveState
+	Monitor area: (F 3.2)
+
+		Detect sound (F 3.2.1)
+
+		Record detected sound sample (F 3.2.2)
+
+		Perform pre-processing on the recorded sound sample (F 3.2.3)
+
+		Classify sound (F 3.2.4)
+
+		Perform actions accordingly:
+			Provide output (via User Interface)
+			if reactiveMode
+				contactAuthorities()
+
+		Detect user input (F 3.2.6)

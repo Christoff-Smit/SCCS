@@ -1,0 +1,32 @@
+Date,Start time,Hours worked,Description,Stop time
+2020-09-01,20:00:00.0,1,Revision of Milestone 1 & 2,21:00:00.0
+2020-09-02,15:00:00.0,3,Julia research + practice,18:00:00.0
+2020-09-03,19:00:00.0,2,Julia practice (start hour_logger.jl),21:00:00.0
+2020-09-04,09:30:00.0,3,Project Planning,12:30:00.0
+2020-09-04,20:30:00.0,2,Improved hour_logger.jl (+-80% functionality),22:30:00.0
+2020-09-05,17:00:00.0,2,Julia practice (finished hour_logger.jl BETA),19:00:00.0
+2020-09-06,10:30:00.0,5,Completed Project Planning and compiled Gantt Chart,15:30:00.0
+2020-09-06,17:00:00.0,1,Added Gantt chart functionality to hour_logger.jl,18:00:00.0
+2020-09-10,10:00:00.0,2,Started Chapter 1: Introduction,12:00:00.0
+2020-09-10,18:00:00.0,3,Completed Chapter 1 (draft version),21:00:00.0
+2020-09-11,11:00:00.0,2,Started Chapter 2: Literature Study,13:00:00.0
+2020-09-11,17:20:00.0,2,Completed preliminary SCD,19:20:00.0
+2020-09-12,09:00:00.0,3,Completed preliminary physical architecture,12:00:00.0
+2020-09-12,15:00:00.0,2,Started prelim functional flow,17:00:00.0
+2020-09-14,07:00:00.0,2,Completed prelim functional flow,09:00:00.0
+2020-09-14,12:00:00.0,3,Completed prelim states & modes,15:00:00.0
+2020-09-14,20:00:00.0,2,Started Spec Doc,22:00:00.0
+2020-09-15,10:00:00.0,3,Worked on Spec Doc,13:00:00.0
+2020-09-15,18:00:00.0,3,Compiled list of Requirements,21:00:00.0
+2020-09-17,08:30:00.0,2,Compiled Questions for Client,10:30:00.0
+2020-09-17,20:00:00.0,3,Started with Lit Study,23:00:00.0
+2020-09-25,10:00:00.0,2,Obtained relevant sound libraries,12:00:00.0
+2020-09-25,18:30:00.0,3,Compiled pseudo code for main.jl,21:30:00.0
+2020-09-26,12:00:00.0,2,Project Planning,14:00:00.0
+2020-09-26,18:20:00.0,3,Worked on main.jl layout,21:20:00.0
+2020-09-27,09:00:00.0,3,Julia research & practice,12:00:00.0
+2020-09-27,15:00:00.0,3,Flux research & practice,18:00:00.0
+2020-10-01,19:00:00.0,2,Research on Flux ML framework,21:00:00.0
+2020-10-01,21:00:00.0,2,SampledSignals.jl implementation,23:00:00.0
+2020-10-03,10:30:00.0,2,60-minute-blitz.jl (Flux github),12:30:00.0
+2020-10-03,14:00:00.0,3,FluxML/model-zoo exploration,17:00:00.0

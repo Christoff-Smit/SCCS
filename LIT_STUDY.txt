@@ -1,0 +1,58 @@
+Introduction:
+
+How do microphones work? Describe mics being used in the SLS-SCCS system
+
+How does audio classification work? How does machine learning work?
+
+sssssssssssssss
+
+Python vs Julia
+    Julit is a JIT language
+    long initial loading of packages (pre-compiling) but faster execution later
+    Pandas vs Dataframes.jl
+    Matplotlib (as PyPlot) vs Plots (Plotly)
+    DSP.jl (digital signal processing functionalities in Julia)
+
+
+###############################################################
+Part 1: Neural Network
+
+Convolutional NN vs Recurrent NN
+
+Compare the different Julia ML modules:
+Flux.jl         (machine learning stack)
+Knet.jl         (deep learning framework)
+Tensorflow.jl   (wrapper for Tensorflow)
+Turing.jl       (used for probabilistic ML)
+MLJ.jl          (framework to compose ML models)
+ScikitLearn.jl  (scikit-learn API)
+
+###############################################################
+Part 2: Sample Libraries
+UrbanSound8K: (car horn, dog barking, drilling, engine, gunshot, siren)
+    8732 (8.75 hours) labeled sound excerpts (<=4s)
+    The classes are drawn from the urban sound taxonomy. (https://urbansounddataset.weebly.com/taxonomy.html)
+    For a detailed description of the dataset and how it was compiled please refer to our paper. (http://www.justinsalamon.com/uploads/4/3/9/4/4394963/salamon_urbansound_acmmm14.pdf)
+
+
+FSDnoisy18k: (engine, glass, rain, slam, squeak, tearing, footsteps, wind)
+    It contains 42.5 hours of audio (18k sound samples) across 20 sound classes. (https://www.eduardofonseca.net/FSDnoisy18k/)
+    Classes are drawn from the AudioSet Ontology. (https://research.google.com/audioset////////ontology/index.html)
+
+
+FSDKaggle2018: (dog barking, cough, finger snapping, gunshots, keys jangling, knocking, laughter, shatter, squeak, tearing)
+    containing 11,073 audio files annotated with 41 labels.
+    Paper: http://dcase.community/documents/workshop2018/proceedings/DCASE2018Workshop_Fonseca_114.pdf
+
+
+
+###############################################################
+Part 3: Sound interface (input from microphones)
+
+AudioDisplay.jl
+
+JuliaAudio family:
+    SampledSignals.jl
+    PortAudio.jl
+    JACKAudio.jl
+    LibSndFile.jl

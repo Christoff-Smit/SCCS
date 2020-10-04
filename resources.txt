@@ -1,0 +1,15 @@
+http://practicalcryptography.com/miscellaneous/machine-learning/guide-mel-frequency-cepstral-coefficients-mfccs/
+
+https://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html
+
+http://datagenetics.com/blog/november32012/index.html
+
+https://github.com/FluxML/model-zoo
+
+Garofalo, J. S., Lamel, L. F., Fisher, W. M., Fiscus, J. G., Pallett, D. S., & Dahlgren, N. L. (1993). The DARPA TIMIT acoustic-phonetic continuous speech corpus cdrom. Linguistic Data Consortium.
+
+Graves, A., & Schmidhuber, J. (2005). Framewise phoneme classification with bidirectional LSTM and other neural network architectures. *Neural Networks, 18*(5-6), 602-610.
+
+https://www.youtube.com/watch?v=mJx30g3bzQo
+
+https://www.youtube.com/watch?v=uCGROOUO_wY

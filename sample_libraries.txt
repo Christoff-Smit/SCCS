@@ -1,0 +1,6 @@
+Enlarge available data set via data augmentation (creating more samples by introducing slight noise)
+
+UrbanSound8K het:
+    Dog barking
+    Gun Shots
+    Car Horn
