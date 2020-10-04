@@ -5,8 +5,8 @@ using DSP: spectrogram, time, freq, power
 using WAV
 using Statistics
 # using Gadfly
-using Plots: plot
-# using PyPlot
+using Plots: plot, plot!
+# using PyPlot: specgram, plot, subplots
 # using ScikitLearn
 # using StatsModels
 # using MultivariateStats
@@ -52,27 +52,39 @@ trainingDF, testDF, path_to_wav_files, path_to_metadata = importFSDnoisy18k()
 
 file = trainingDF[rand(1:length(trainingDF[1])), :].fname
 y, fs = process_with_SampledSignals(trainingDF,testDF,file)
-display(plot(0:1/fs:(length(y)-1)/fs, y))
+timeRange = 0:1/fs:(length(y)-1)/fs
+plot(timeRange,y)
 # xlabel("Time [s]")
 println(fs)
 println(y[2][1])
 signal = y[:,1]
+display(plot!(timeRange,signal))
 n = div(length(signal),8)
 noverlap = div(n,2)
+nfft = 1024  # (2^10) -> length of the windowing segments
 # println(y[:,1])
 # println(y[:,sf])
-SG = spectrogram(signal,n,noverlap)
+SG = spectrogram(signal)
+# SG = spectrogram(signal,n,noverlap)
 
-display(SG)
-println(SG.freq[1])
-println(SG.power[1])
-println(SG.time)
-println(dfeqrer)
+# println(dfeqrer)
+
+# display(periodogram)
 t = time(SG)
+myDescribe(t)
 f = freq(SG)
-imshow(flipud(log10(power(SG))), extent=[first(t), last(t), fs*first(f), fs*last(f)], aspect="auto")
+myDescribe(f)
+p = power(SG)
+myDescribe(p)
+println(p[1])
+println(p[2])
+println(p[1,:])
+# println(dfeqrer)
 
-println(dqerqwe)
+# imshow(flipud(log10(p[:,1])), extent=[first(t), last(t), fs*first(f), fs*last(f)], aspect="auto")
+display(plot(reverse(p[:,12],dims=1), xscale=:log10))
+SG
+println(dfeqrer)
 
 
 

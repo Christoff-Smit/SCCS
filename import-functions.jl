@@ -117,6 +117,8 @@ end
 function myDescribe(object)
     println("Here follows the dimensions for:")
     display(object)
+    print("typeof = ")
+    println(typeof(object))
     print("sizeof = ")
     println(sizeof(object))
     print("size = ")
