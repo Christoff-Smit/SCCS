@@ -64,8 +64,8 @@ noverlap = div(n,2)
 nfft = 1024  # (2^10) -> length of the windowing segments
 # println(y[:,1])
 # println(y[:,sf])
-SG = spectrogram(signal)
-# SG = spectrogram(signal,n,noverlap)
+# SG = spectrogram(signal)
+SG = spectrogram(signal,n,noverlap)
 
 # println(dfeqrer)
 
@@ -82,8 +82,8 @@ println(p[1,:])
 # println(dfeqrer)
 
 # imshow(flipud(log10(p[:,1])), extent=[first(t), last(t), fs*first(f), fs*last(f)], aspect="auto")
-display(plot(reverse(p[:,12],dims=1), xscale=:log10))
-SG
+display(plot(reverse(p,dims=1), xscale=:log10,
+xlims=(10^3,10^4)))
 println(dfeqrer)
 
 
