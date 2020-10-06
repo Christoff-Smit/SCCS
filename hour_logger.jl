@@ -1,10 +1,6 @@
 using Printf
 using Dates
-using PyCall
-# using DelimitedFiles
-# using Pkg
 using DataFrames
-# using Pandas
 using CSV
 # using Statistics
 # using Plots
@@ -168,7 +164,7 @@ gantt_chart_df.stop_time = dates_plus_one
 
 # println(gantt_chart_df)
 
-Gadfly.set_default_plot_size(18cm,14cm) #width,height
+Gadfly.set_default_plot_size(18cm,16cm) #width,height
 
 colormap = Colors.distinguishable_colors(nrOfEntries)
 
@@ -178,7 +174,7 @@ plot = Gadfly.plot(
         ymin=0,
         ymax=nrOfEntries*1,
         xmin=StartingDate,
-        xmax=StartingDate+Dates.Day(35)#Dates.Day(nrOfEntries-1)
+        xmax=StartingDate+Dates.Day(nrOfEntries+2)
         ),
     layer(
         x=:start_time,
