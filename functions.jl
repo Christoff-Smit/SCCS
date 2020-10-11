@@ -1,5 +1,5 @@
 
-using PyPlot: specgram, show, plot, subplots, gcf, title, cm, xlabel, ylabel
+using PyPlot: specgram, show, plot, subplots, gcf, title, cm, xlabel, ylabel, xticks
 
 ################################################################################################
 #FUNCTIONS:
@@ -133,22 +133,20 @@ end
 ################################################################################################
 # for signal-processing.jl
 
-function plot_wav(y,fs)
-    nrOfChannels = length(y[1,:])
+function plot_wav(y,fs,nrOfChannels)
     channels = 1:nrOfChannels
 
     start_time = 0
     period = 1/fs
     stop_time = (length(y)-1)/fs
-    timeArr = start_time:period:stop_time/nrOfChannels
 
-    
+    timeArr = start_time:period:stop_time/nrOfChannels
 
     if nrOfChannels>1
         Plots.plot(
             timeArr,y[:,1],
             label="channel 1",
-            xlabel="Time (s)",
+            xlabel="Time (period intervals)",
             ylabel="Amplitude",
             title="Amplitude over time"
         )
@@ -186,13 +184,14 @@ function plot_Periodogram(signal)
     return power
 end
 
-function plot_Spectrogram(signal,framework)
+function plot_Spectrogram(signal,framework,fs)
     if framework == "PyPlot"
-        powerSpectrum, freqs, time = specgram(signal,cmap=cm.inferno)
+        powerSpectrum, freqs, timeRange = specgram(signal,cmap=cm.inferno)
+        # println(length(signal))
         # powerSpectrum = 2-D array: Columns are the periodograms of successive segments.
         # freqs = 1-D array: The frequencies corresponding to the rows in spectrum.
         title("Spectrogram")
-        xlabel("Nr of periods (1/44100 secs) elapsed")
+        xlabel("Time (s)")
         # show()
         display(gcf())
     elseif framework == "DSP"
@@ -217,10 +216,13 @@ function plot_Spectrogram(signal,framework)
         # println(p[1])
         # println(p[2])
         # println(p[1,:])
+        # println(t)
+        # println(length(t))
+        # println(dferqwerasdf)
         display(
             Plots.plot(t,p',
             xlabel="Time (nr of periods elapsed, up to the 44100th one?)",
-            # xscale=:log10,
+            xscale=:log10,
             ylabel="Frequency",
             yscale=:log10,
             # xlims=(10^2,10^5),
