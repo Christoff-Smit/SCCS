@@ -8,7 +8,7 @@ using DataFrames: first, groupby, nrow
 ################################################################################################
 #for import.jl
 
-function describeDF(df, classes)
+function describe_DF(df, classes)
     println(string(nrow(df)," entries for ",string(length(classes), " classes, namely:")))
     println(classes)
     nr_to_show = 5

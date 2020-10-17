@@ -24,7 +24,7 @@ function importUrbanSound8K()
 
     classes = unique(metadata_DF.class)
     
-    describeDF(metadata_DF, classes)
+    describe_DF(metadata_DF, classes)
     # println(filter(row -> row[:class] == "dog_bark", metadata_DF))
 
     #let's just consider dog_bark for now (1 000 samples)
@@ -42,17 +42,18 @@ function importUrbanSound8K()
     # determineClassDistrib(df,false)
 
     trainingDF = filter(row -> row[:fold] != 1, metadata_DF)
+    println("Training dataset shape:")
     println(size(trainingDF))
     testDF = filter(row -> row[:fold] == 1, metadata_DF)
+    println("Test dataset shape:")
     println(size(testDF))
-    wag
 
 
     return trainingDF, testDF, path_to_wav_files, path_to_metadata
 end
 
 
-trainingDF, testDF, path_to_wav_files, path_to_metadata = importUrbanSound8K()
+
 
 # println(trainingDF)
 # println(testDF)

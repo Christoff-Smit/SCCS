@@ -17,9 +17,9 @@ cla()
 ######################################################################
 
 
-function process_wav(filepath)
-    println("\nSound sample to be processed:")
-    println(filepath)
+function describe_WAV(path_to_wav)
+    # println("\nSound sample to be described:")
+    # println(filepath)
     
     y, fs = WAV.wavread(path_to_wav)
 
@@ -51,7 +51,7 @@ path_to_wav = "C:/Users/Christoff/Downloads/sine.wav"
 # path_to_wav = "C:/Users/Christoff/Downloads/piano_e6.wav"
 # path_to_wav = "C:/Users/Christoff/Downloads/noise.wav"
 
-process_wav(path_to_wav)
+# describe_WAV(path_to_wav)
 
 ######################################################################
 ######################################################################
