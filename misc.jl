@@ -1,5 +1,6 @@
 
-# using PyPlot: specgram, show, plot, subplots, gcf, title, cm, xlabel, ylabel, xticks
+using PyPlot: specgram, subplots, gcf, title, cm, xlabel, ylabel, xticks
+using Colors
 using DataFrames: first, groupby, nrow
 
 ################################################################################################
@@ -116,8 +117,8 @@ function process_with_SampledSignals(trainingDF,testDF,file)
     return y, fs
 end
 
-function myDescribe(object)
-    println("Here follows the dimensions for:")
+function myDescribe(object, fileName)
+    println(string("Info on ", fileName, ":"))
     display(object)
     print("typeof = ")
     println(typeof(object))
@@ -127,12 +128,13 @@ function myDescribe(object)
     println(size(object))
     print("length = ")
     println(length(object))
+    println()
 end
     
 ################################################################################################
 # for signal-processing.jl
 
-function plot_wav(y,fs,nrOfChannels)
+function plot_WAV(y,fs,nrOfChannels)
     channels = 1:nrOfChannels
 
     start_time = 0
@@ -175,15 +177,16 @@ function plot_Periodogram(t,signal)
     periodogram = DSP.Periodograms.periodogram(signal)
     # println(periodogram) #! BAD IDEA
     # println(length(periodogram.power))
+    # println(sizeof(periodogram.power))
     # println(length(periodogram.freq))
     # println(periodogram[:,3])
     display(Plots.plot(
         periodogram.power,
-        # xscale=:log10,
+        # xscale=:log10, #!doesn't work
         xlims=(0,20000),
         xlabel="Frequency",
         ylabel="Amplitude (dB)",
-        yscale=:log10,
+        # yscale=:log10,
         title="Power Density Spectrum"))
     # display(Plots.plot(periodogram.freq,title="Frequency"))
     # println(dferqwerwesdaf)
@@ -192,15 +195,14 @@ end
 
 function plot_Spectrogram(signal,framework,fs)
     if framework == "PyPlot"
-        spectrum, freqs, timeRange = specgram(signal,Fs=fs,cmap=cm.inferno,noverlap=128,NFFT=512)
+        spectrum, freqs, timeRange, im = specgram(signal,Fs=fs,cmap=cm.inferno,noverlap=128,NFFT=512)
         # println(length(signal))
         # p -> powerSpectrum = 2-D array: Columns are the periodograms of successive segments.
         # freqs = 1-D array: The frequencies corresponding to the rows in spectrum.
-        title("Spectrogram")
-        xlabel("Time (s)")
-        # show()
-        display(gcf())
-        return spectrum, freqs, timeRange
+        # title("Spectrogram")
+        # xlabel("Time (s)")
+        # display(gcf())
+        return spectrum, freqs, timeRange, im
     elseif framework == "DSP"
         #default values:
         # n = div(length(signal),8)
