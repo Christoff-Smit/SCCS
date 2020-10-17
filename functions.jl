@@ -1,5 +1,6 @@
 
-using PyPlot: specgram, show, plot, subplots, gcf, title, cm, xlabel, ylabel, xticks
+# using PyPlot: specgram, show, plot, subplots, gcf, title, cm, xlabel, ylabel, xticks
+using DataFrames: first, groupby, nrow
 
 ################################################################################################
 #FUNCTIONS:
@@ -8,13 +9,11 @@ using PyPlot: specgram, show, plot, subplots, gcf, title, cm, xlabel, ylabel, xt
 #for import.jl
 
 function describeDF(df, classes)
-    println(string(nrow(df)," entries for ",string(length(classes), " classes:")))
+    println(string(nrow(df)," entries for ",string(length(classes), " classes, namely:")))
     println(classes)
-
-    # println(df)
-    # println(typeof(df))
-    # println(DataFrames.describe(df))
-    # println(DataFrames.groupby(df, "label"))
+    nr_to_show = 5
+    println(string("Here's the top ", nr_to_show, " rows:"))
+    println(first(df,nr_to_show))
 end
 
 function extractRelevantData(df, selectedIndices, classes)

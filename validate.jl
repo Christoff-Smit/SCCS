@@ -1,0 +1,3 @@
+# The compilers of the UrbanSound8K dataset recommends:
+
+# ​* 10-fold cross validation using the predefined folds: that is, train on data from 9 of the 10 predefined folds and test on data from the remaining fold. Repeat this process 10 times (each time using a different set of 9 out of the 10 folds for training and the remaining fold for testing). Finally report the average classification accuracy over all 10 experiments (as an average score + standard deviation, or, even better, as a boxplot).
