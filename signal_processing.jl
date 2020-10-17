@@ -25,27 +25,29 @@ function process_wav(filepath)
 
     nrOfChannels = length(y[1,:])
 
-    println("Signal Data:")
+    println("###########################")
+    println("Signal Info:")
+    println("###########################")
     myDescribe(y)
-
+    print("Nr of channels: ")
+    println(nrOfChannels)
     print("Sampling frequency: ")
     println(fs)
+    println("###########################")
 
-    plot_wav(y,fs,nrOfChannels)
+    t = plot_wav(y,fs,nrOfChannels)
 
     signal = y[:,1] #from now on consider only one (the first) channel
     # println(signal[1:10])
 
-    # p = plot_Periodogram(signal)
-    # plot_PSD(p)
+    p = plot_Periodogram(t,signal)
 
-    plot_Spectrogram(signal,"PyPlot",fs)
-    # plot_Spectrogram(signal,"DSP")
-    
+    spectrum, freqs, timeRange = plot_Spectrogram(signal,"PyPlot",fs)
+    # plot_Spectrogram(signal,"DSP",fs)
 end
 
-# path_to_wav = "C:/Users/Christoff/Downloads/sine.wav"
-path_to_wav = "C:/Users/Christoff/Downloads/glass_harp.wav"
+path_to_wav = "C:/Users/Christoff/Downloads/sine.wav"
+# path_to_wav = "C:/Users/Christoff/Downloads/glass_harp.wav"
 # path_to_wav = "C:/Users/Christoff/Downloads/piano_e6.wav"
 # path_to_wav = "C:/Users/Christoff/Downloads/noise.wav"
 

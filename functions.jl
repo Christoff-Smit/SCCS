@@ -169,37 +169,48 @@ function plot_wav(y,fs,nrOfChannels)
             title="Amplitude over time"
         ))
     end
+    return timeArr
 end
 
-function plot_Periodogram(signal)
+function plot_Periodogram(t,signal)
     periodogram = DSP.Periodograms.periodogram(signal)
-    power = periodogram.power
     # println(periodogram) #! BAD IDEA
-    println(length(periodogram.power))
-    println(length(periodogram.freq))
+    # println(length(periodogram.power))
+    # println(length(periodogram.freq))
     # println(periodogram[:,3])
-    display(Plots.plot(periodogram.power,title="Power"))
+    display(Plots.plot(
+        periodogram.power,
+        # xscale=:log10,
+        xlims=(0,20000),
+        xlabel="Frequency",
+        ylabel="Amplitude (dB)",
+        yscale=:log10,
+        title="Power Density Spectrum"))
     # display(Plots.plot(periodogram.freq,title="Frequency"))
     # println(dferqwerwesdaf)
-    return power
+    return periodogram.power
 end
 
 function plot_Spectrogram(signal,framework,fs)
     if framework == "PyPlot"
-        powerSpectrum, freqs, timeRange = specgram(signal,cmap=cm.inferno)
+        spectrum, freqs, timeRange = specgram(signal,Fs=fs,cmap=cm.inferno,noverlap=128,NFFT=512)
         # println(length(signal))
-        # powerSpectrum = 2-D array: Columns are the periodograms of successive segments.
+        # p -> powerSpectrum = 2-D array: Columns are the periodograms of successive segments.
         # freqs = 1-D array: The frequencies corresponding to the rows in spectrum.
         title("Spectrogram")
         xlabel("Time (s)")
         # show()
         display(gcf())
+        return spectrum, freqs, timeRange
     elseif framework == "DSP"
         #default values:
-        n = div(length(signal),8)
-        noverlap = div(n,2)
+        # n = div(length(signal),8)
+        # noverlap = div(n,10)
+        n = 512
+        noverlap = 128
         
-        SG = DSP.Periodograms.spectrogram(signal,n,noverlap)
+        # SG = DSP.Periodograms.spectrogram(signal,n,noverlap,fs=fs)
+        SG = DSP.Periodograms.spectrogram(signal,fs=fs)
         # myDescribe(SG)
         
         t = DSP.time(SG)
@@ -220,26 +231,14 @@ function plot_Spectrogram(signal,framework,fs)
         # println(length(t))
         # println(dferqwerasdf)
         display(
-            Plots.plot(t,p',
-            xlabel="Time (nr of periods elapsed, up to the 44100th one?)",
-            xscale=:log10,
+            Plots.plot(p,
+            xlabel="Time",
+            # xscale=:log10,
             ylabel="Frequency",
             yscale=:log10,
-            # xlims=(10^2,10^5),
             title="Spectrogram")
         )
     end
-end
-
-function plot_PSD(p)
-    display(Plots.plot(reverse(p,dims=1),
-    xlabel="Frequency",
-    xscale=:log10,
-    ylabel="Amplitude",
-    yscale=:log10,
-    # xlims=(10^2,10^5),
-    title="Power Spectrum Density plot")
-    )
 end
 
 ################################################################################################
