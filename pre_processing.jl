@@ -9,6 +9,7 @@ using PyCall
 # PyCall.pygui(true) #true by default
 PyCall.pygui(:tk) #choose between -> :wx, :gtk (or :tk?), or :qt
 # using ScikitLearn
+using MFCC
 
 include("misc.jl")
 cla()
@@ -34,7 +35,7 @@ function describe_WAV(path_to_wav)
     println(fs)
     println("#################################################")
 
-    timeArr = plot_WAV(y,fs,nrOfChannels)
+    timeArr = plot_WAV(y,fs,nrOfChannels, path_to_wav)
 
     signal = y[:,1] #considering only one (the first) channel
 
@@ -46,13 +47,18 @@ function describe_WAV(path_to_wav)
     # println(spectrum[1:5, :])
     # println(typeof(spectrum))
     # println(sizeof(spectrum))
-    println("Spectogram image matrix:")
+    println("Spectogram matrix (PyPlot):")
     println(string(size(spectrum)[1]," x ",size(spectrum)[2]," = ", length(spectrum)))
 
     # println(freqs[1:1])
     # println(typeof(freqs))
     # println(sizeof(freqs))
     # println(size(freqs))
+
+    MFCC_output = MFCC.mfcc(signal[:,1], fs; numcep=13)
+    spectrogram = MFCC_output[2]
+    println(size(spectrogram))
+    # display(Plots.heatmap(spectrogram', fill=true, title="Spectrogram (using MFCC and DSP)"))
 end
 
 # path_to_wav = "C:/Users/Christoff/Downloads/sine.wav"
@@ -65,12 +71,11 @@ end
 ######################################################################
 ######################################################################
 
-function get_spectrogram(path_to_wav)
-    y, fs = WAV.wavread(path_to_wav)
-    signal = y[:,1] #considering only one (the first) channel
-    spectrum, freqs, timeRange, im = plot_Spectrogram(signal,"PyPlot",fs)
-    Plots.im
-    println("Spectrogram image matrix:")
-    println(string(size(spectrum)[1]," x ",size(spectrum)[2]," = ", length(spectrum)))
-    return spectrum
-end
+# function get_spectrogram(path_to_wav)
+#     y, fs = WAV.wavread(path_to_wav)
+#     signal = y[:,1] #considering only one (the first) channel
+#     spectrum, freqs, timeRange, im = plot_Spectrogram(signal,"PyPlot",fs)
+#     println("Spectrogram image matrix:")
+#     println(string(size(spectrum)[1]," x ",size(spectrum)[2]," = ", length(spectrum)))
+#     return spectrum, freqs
+# end

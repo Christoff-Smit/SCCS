@@ -2,6 +2,9 @@
 using PyPlot: specgram, subplots, gcf, title, cm, xlabel, ylabel, xticks
 using Colors
 using DataFrames: first, groupby, nrow
+# using PyCall
+# # PyCall.pygui(true) #true by default
+# PyCall.pygui(:tk) #choose between -> :wx, :gtk (or :tk?), or :qt
 
 ################################################################################################
 #FUNCTIONS:
@@ -134,7 +137,7 @@ end
 ################################################################################################
 # for signal-processing.jl
 
-function plot_WAV(y,fs,nrOfChannels)
+function plot_WAV(y,fs,nrOfChannels,path_to_wav)
     channels = 1:nrOfChannels
 
     start_time = 0
@@ -149,7 +152,7 @@ function plot_WAV(y,fs,nrOfChannels)
             label="channel 1",
             xlabel="Time (period intervals)",
             ylabel="Amplitude",
-            title="Amplitude over time"
+            title=string(path_to_wav[length(path_to_wav)-22:length(path_to_wav)]," (time domain)")
         )
         for channel in channels[2,:] #for every channel except the first one
             signal = y[:,channel]
@@ -199,9 +202,9 @@ function plot_Spectrogram(signal,framework,fs)
         # println(length(signal))
         # p -> powerSpectrum = 2-D array: Columns are the periodograms of successive segments.
         # freqs = 1-D array: The frequencies corresponding to the rows in spectrum.
-        # title("Spectrogram")
-        # xlabel("Time (s)")
-        # display(gcf())
+        title("Spectrogram (PyPlot)")
+        xlabel("Time (s)")
+        display(gcf())
         return spectrum, freqs, timeRange, im
     elseif framework == "DSP"
         #default values:
@@ -242,5 +245,20 @@ function plot_Spectrogram(signal,framework,fs)
     end
 end
 
+function show_MFCC(index)
+    this_MFCC = test_mfccs.values[index]
+    println(size(this_MFCC))
+    this_Path = test_mfccs.keys[index]
+    println(this_Path)
+
+    # describe_WAV(this_Path)
+
+    numcep = 13
+
+    palette = Plots.palette(:Greens, numcep)
+    display(Plots.heatmap(this_MFCC', fill=true, c=palette, title=string("MFCC's for ",this_Path[length(this_Path)-22:length(this_Path)]), xlabel="Time (ms)", ylabel="MFCC"))
+    println("MFCC matrix:")
+    println(string(size(this_MFCC)[1]," x ",size(this_MFCC)[2]," = ", length(this_MFCC)))
+end
 ################################################################################################
 

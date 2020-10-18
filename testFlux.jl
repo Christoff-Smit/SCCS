@@ -1,4 +1,4 @@
-using Flux: Dense, σ, Chain, softmax
+using Flux: Dense, σ, Chain, softmax, relu
 using Plots
 using Random
 # using ScikitLearn
@@ -72,19 +72,14 @@ using Random
 #Flux also lets you create "chains" of layers! :D
 
 model = Chain(
-    Dense(10,5,σ),   #a dense layer with 10 inputs and 5 outputs
-    Dense(5,3),      #5 inputs and 3 outputs
+    Dense(10,5,relu),   #a dense layer with 10 inputs and 5 outputs
+    Dense(5,3,relu),      #5 inputs and 3 outputs
     softmax
-    #The softmax function is a function that turns a vector of K real values into a vector of K real values that sum to 1
+    # The softmax function is a function that turns a vector of K real values into a vector of K real values that sum to 1
 )
 
-# Random.seed!(1)
-# rng = rand(10)
-# println(rng)
-
-# Random.seed!(1)
-# rng2 = rand(10)
-# println(rng2)
-
 Random.seed!(1)
-model(10)
+rng = rand(10)
+println(rng)
+
+model(rng)
