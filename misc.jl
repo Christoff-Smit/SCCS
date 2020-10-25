@@ -187,8 +187,8 @@ function plot_Periodogram(t,signal)
         periodogram.power,
         # xscale=:log10, #!doesn't work
         xlims=(0,20000),
-        xlabel="Frequency",
-        ylabel="Amplitude (dB)",
+        xlabel="Frequency (Hz)",
+        ylabel="Amplitude",
         # yscale=:log10,
         title="Power Density Spectrum"))
     # display(Plots.plot(periodogram.freq,title="Frequency"))
@@ -251,7 +251,7 @@ function show_MFCC(index)
     this_Path = test_mfccs.keys[index]
     println(this_Path)
 
-    # describe_WAV(this_Path)
+    describe_WAV(this_Path)
 
     numcep = 13
 

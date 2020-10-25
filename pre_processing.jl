@@ -3,7 +3,7 @@ using DSP
 # using SampledSignals
 using WAV
 using Plots
-using PyPlot: specgram, cla
+using PyPlot: specgram, cla, cm, imshow, title, xlabel, gcf, xticks, gca, ylabel
 # using TensorFlow #! not compatible with Windows
 using PyCall
 # PyCall.pygui(true) #true by default
@@ -42,7 +42,7 @@ function describe_WAV(path_to_wav)
     p = plot_Periodogram(timeArr,signal)
 
     spectrum, freqs, timeRange = plot_Spectrogram(signal,"PyPlot",fs)
-    # plot_Spectrogram(signal,"DSP",fs)
+    # spectrum, freqs, timeRange = plot_Spectrogram(signal,"DSP",fs)
 
     # println(spectrum[1:5, :])
     # println(typeof(spectrum))
@@ -56,9 +56,17 @@ function describe_WAV(path_to_wav)
     # println(size(freqs))
 
     MFCC_output = MFCC.mfcc(signal[:,1], fs; numcep=13)
-    spectrogram = MFCC_output[2]
+    spectrogram = MFCC_output[1]
+    println(MFCC_output[3])
+    println("Spectogram matrix (MFCC.jl):")
     println(size(spectrogram))
-    # display(Plots.heatmap(spectrogram', fill=true, title="Spectrogram (using MFCC and DSP)"))
+    
+    imshow(spectrogram', aspect="auto")
+    title("Spectrogram (DSP)")
+    xlabel("Time (ms)")
+    ylabel("Frequency (kHz)")
+    gca().invert_yaxis()
+    display(gcf())
 end
 
 # path_to_wav = "C:/Users/Christoff/Downloads/sine.wav"

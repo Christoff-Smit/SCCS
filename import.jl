@@ -45,7 +45,7 @@ function importUrbanSound8K()
 end
     
 function splitTrainTest(metadataDF,test_fold)
-    println(string("Fold nr. ",test_fold," to be used as test data (with the rest as training data)"))
+    println(string("Fold ",test_fold," to be used as test data (with the rest as training data)"))
     trainingDF = filter(row -> row[:fold] != test_fold, metadataDF)
     println("Training metadataset shape:")
     println(size(trainingDF))

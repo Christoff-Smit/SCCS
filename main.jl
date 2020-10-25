@@ -24,15 +24,16 @@ training_mfccs = load(string(path_to_wav_files,"training_mfccs.jld"), "mfccs") #
 ########################################################################################################################
 #Perform Pre-Processing on the data:
 
-index = 48 # index in test set to look at
+index = 48 # index in test set to select
 show_MFCC(index)
 this_MFCC = test_mfccs.values[index]
 println(size(this_MFCC))
 this_Path = test_mfccs.keys[index]
 println(this_Path)
+wag
 
 println(size(this_MFCC))
-this_MFCC = collect(Iterators.flatten(this_MFCC)) #* remember
+this_MFCC = collect(Iterators.flatten(this_MFCC)) # * remember
 println(size(this_MFCC))
 
 model = Chain(
