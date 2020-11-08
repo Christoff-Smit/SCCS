@@ -35,6 +35,7 @@ println("Flattened (input):")
 println(size(some_MFCC))
 
 sizeOfOutput = 10
+test = 10
 
 model = Chain(
     Dense(sizeOfInput,512,relu), #input layer
@@ -42,6 +43,7 @@ model = Chain(
     Dense(128,32,relu), #2nd hidden layer (making it deep learning...)
     Dense(32,sizeOfOutput), #output layer
     softmax
+    #test
     # The softmax function is a function that turns a vector of K real values into a vector of K real values that sum to 1
 )
 
