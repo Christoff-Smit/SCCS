@@ -202,9 +202,23 @@ function plot_Spectrogram(signal,framework,fs)
         # println(length(signal))
         # p -> powerSpectrum = 2-D array: Columns are the periodograms of successive segments.
         # freqs = 1-D array: The frequencies corresponding to the rows in spectrum.
+
+        # println(spectrum[1:5, :])
+        # println(typeof(spectrum))
+        # println(sizeof(spectrum))
+        println("Spectogram matrix (PyPlot.jl):")
+        println(string(size(spectrum)[1]," x ",size(spectrum)[2]," = ", length(spectrum)))
+
+        # println(freqs[1:1])
+        # println(typeof(freqs))
+        # println(sizeof(freqs))
+        # println(size(freqs))
+
         title("Spectrogram (PyPlot)")
         xlabel("Time (s)")
+        ylabel("Frequency (Hz)")
         display(gcf())
+
         return spectrum, freqs, timeRange, im
     elseif framework == "DSP"
         #default values:
@@ -245,7 +259,7 @@ function plot_Spectrogram(signal,framework,fs)
     end
 end
 
-function show_MFCC(index)
+function get_MFCC(index)
     this_MFCC = test_mfccs.values[index]
     println(size(this_MFCC))
     this_Path = test_mfccs.keys[index]
@@ -259,6 +273,7 @@ function show_MFCC(index)
     display(Plots.heatmap(this_MFCC', fill=true, c=palette, title=string("MFCC's for ",this_Path[length(this_Path)-22:length(this_Path)]), xlabel="Time (ms)", ylabel="MFCC"))
     println("MFCC matrix:")
     println(string(size(this_MFCC)[1]," x ",size(this_MFCC)[2]," = ", length(this_MFCC)))
+    return this_MFCC, length(this_MFCC)
 end
 ################################################################################################
 

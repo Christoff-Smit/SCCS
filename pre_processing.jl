@@ -43,30 +43,20 @@ function describe_WAV(path_to_wav)
 
     spectrum, freqs, timeRange = plot_Spectrogram(signal,"PyPlot",fs)
     # spectrum, freqs, timeRange = plot_Spectrogram(signal,"DSP",fs)
-
-    # println(spectrum[1:5, :])
-    # println(typeof(spectrum))
-    # println(sizeof(spectrum))
-    println("Spectogram matrix (PyPlot):")
-    println(string(size(spectrum)[1]," x ",size(spectrum)[2]," = ", length(spectrum)))
-
-    # println(freqs[1:1])
-    # println(typeof(freqs))
-    # println(sizeof(freqs))
-    # println(size(freqs))
+    # spectrum, freqs, timeRange = plot_Spectrogram(signal,"MFCC",fs)
 
     MFCC_output = MFCC.mfcc(signal[:,1], fs; numcep=13)
-    spectrogram = MFCC_output[1]
-    println(MFCC_output[3])
+    spectrogram = MFCC_output[2]
+    # println(MFCC_output[3])
     println("Spectogram matrix (MFCC.jl):")
     println(size(spectrogram))
     
-    imshow(spectrogram', aspect="auto")
-    title("Spectrogram (DSP)")
-    xlabel("Time (ms)")
-    ylabel("Frequency (kHz)")
-    gca().invert_yaxis()
-    display(gcf())
+    # imshow(spectrogram', aspect="auto")
+    # title("Spectrogram (DSP.jl via MFCC.jl)")
+    # xlabel("Time (ms)")
+    # ylabel("Frequency (kHz)")
+    # gca().invert_yaxis()
+    # display(gcf())
 end
 
 # path_to_wav = "C:/Users/Christoff/Downloads/sine.wav"

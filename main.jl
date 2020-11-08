@@ -24,23 +24,23 @@ training_mfccs = load(string(path_to_wav_files,"training_mfccs.jld"), "mfccs") #
 ########################################################################################################################
 #Perform Pre-Processing on the data:
 
-index = 48 # index in test set to select
-show_MFCC(index)
-this_MFCC = test_mfccs.values[index]
-println(size(this_MFCC))
-this_Path = test_mfccs.keys[index]
-println(this_Path)
-wag
+index = 77 # index in test set to select (48 used in report)
+some_MFCC, sizeOfInput = get_MFCC(index) # get the specified value from the test data set
+println(sizeOfInput)
 
-println(size(this_MFCC))
-this_MFCC = collect(Iterators.flatten(this_MFCC)) # * remember
-println(size(this_MFCC))
+println("Flattening sample MFCC..")
+println(size(some_MFCC))
+some_MFCC = collect(Iterators.flatten(some_MFCC)) # * remember
+println("Flattened (input):")
+println(size(some_MFCC))
+
+sizeOfOutput = 10
 
 model = Chain(
-    Dense(5174,512,relu), #input layer
+    Dense(sizeOfInput,512,relu), #input layer
     Dense(512,128,relu), #1st hidden layer
-    Dense(128,32,relu), #2nd hidden layer
-    Dense(32,10), #output layer
+    Dense(128,32,relu), #2nd hidden layer (making it deep learning...)
+    Dense(32,sizeOfOutput), #output layer
     softmax
     # The softmax function is a function that turns a vector of K real values into a vector of K real values that sum to 1
 )
@@ -49,6 +49,6 @@ model = Chain(
 
 # params = Flux.params(model)
 
-model(this_MFCC)
+model(some_MFCC)
 
 # println("End of Program")
