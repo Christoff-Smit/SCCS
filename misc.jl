@@ -2,6 +2,8 @@
 using PyPlot: specgram, subplots, gcf, title, cm, xlabel, ylabel, xticks
 using Colors
 using DataFrames: first, groupby, nrow
+using GR
+using Plots
 # using PyCall
 # # PyCall.pygui(true) #true by default
 # PyCall.pygui(:tk) #choose between -> :wx, :gtk (or :tk?), or :qt
@@ -12,26 +14,27 @@ using DataFrames: first, groupby, nrow
 ################################################################################################
 #for import.jl
 
-function describe_DF(df, classes)
-    println(string(nrow(df)," entries for ",string(length(classes), " classes, namely:")))
+function describe_DF(metadataDF, classes)
+    println(string(nrow(metadataDF)," entries for ",string(length(classes), " classes, namely:")))
     println(classes)
     nr_to_show = 5
     println(string("Here's the top ", nr_to_show, " rows:"))
-    println(first(df,nr_to_show))
+    println(first(metadataDF,nr_to_show))
 end
 
-function extractRelevantData(df, selectedIndices, classes)
-    df = DataFrames.groupby(df, :label)[selectedIndices] #extracted data
-    # println(typeof(df))
-    df = DataFrames.combine(df,:, keepkeys=false, ungroup=true) #convert grouped data into a dataframe
-    # println(typeof(df))
-    # println(df)
-    println(string(nrow(df)," entries extracted from full dataset"))
-    # println(string(nrow(df))*" entries extracted from full dataset")
-    println("Extracted classes:")
-    println(classes[selectedIndices])
-    return df
-end
+# function extractRelevantData(df, selectedIndices, classes)
+#     # IF YOU ONLY WANNA USE SOME CLASSES OF THE DATA SET:
+#     df = DataFrames.groupby(df, :label)[selectedIndices] #extracted data
+#     # println(typeof(df))
+#     df = DataFrames.combine(df,:, keepkeys=false, ungroup=true) #convert grouped data into a dataframe
+#     # println(typeof(df))
+#     # println(df)
+#     println(string(nrow(df)," entries extracted from full dataset"))
+#     # println(string(nrow(df))*" entries extracted from full dataset")
+#     println("Extracted classes:")
+#     println(classes[selectedIndices])
+#     return df
+# end
 
 function getSampleLengths(df)
     sample_lengths = Float32[]
@@ -185,6 +188,7 @@ function plot_Periodogram(t,signal)
     # println(periodogram[:,3])
     display(Plots.plot(
         periodogram.power,
+        # size = (100, 100),
         # xscale=:log10, #!doesn't work
         xlims=(0,20000),
         xlabel="Frequency (Hz)",
@@ -259,21 +263,27 @@ function plot_Spectrogram(signal,framework,fs)
     end
 end
 
-function get_MFCC(index)
-    this_MFCC = test_mfccs.values[index]
+function get_one_MFCC(slice_file_name, fold, MFCCs)
+    println(slice_file_name)
+    
+    this_MFCC = MFCCs[slice_file_name]
     println(size(this_MFCC))
-    this_Path = test_mfccs.keys[index]
-    println(this_Path)
+    path_to_wav = string(path_to_wav_files,"fold",fold,"/",slice_file_name)
+    println(path_to_wav)
+    # wag
 
-    describe_WAV(this_Path)
+    describe_WAV(path_to_wav)
 
     numcep = 13
 
-    palette = Plots.palette(:Greens, numcep)
-    display(Plots.heatmap(this_MFCC', fill=true, c=palette, title=string("MFCC's for ",this_Path[length(this_Path)-22:length(this_Path)]), xlabel="Time (ms)", ylabel="MFCC"))
+    # palette = Plots.palette(:Blues, numcep)
+    palette = Plots.palette(:Blues)
+    # display(Plots.heatmap(this_MFCC', fill=true, c=palette, title=string("MFCC's for ",path_to_wav[length(path_to_wav)-22:length(path_to_wav)]), xlabel="Time (ms)", ylabel="MFCC"))
+    display(Plots.heatmap(this_MFCC', fill=true, title=string("MFCC's for ",path_to_wav[length(path_to_wav)-22:length(path_to_wav)]), xlabel="Time (ms)", ylabel="MFCC"))
     println("MFCC matrix:")
     println(string(size(this_MFCC)[1]," x ",size(this_MFCC)[2]," = ", length(this_MFCC)))
     return this_MFCC, length(this_MFCC)
 end
-################################################################################################
+
+
 
