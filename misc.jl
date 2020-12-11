@@ -155,6 +155,8 @@ function plot_WAV(y,fs,nrOfChannels,path_to_wav)
             label="channel 1",
             xlabel="Time (period intervals)",
             ylabel="Amplitude",
+            size=(400,300),
+            dpi=40,
             title=string(path_to_wav[length(path_to_wav)-22:length(path_to_wav)]," (time domain)")
         )
         for channel in channels[2,:] #for every channel except the first one
@@ -193,6 +195,8 @@ function plot_Periodogram(t,signal)
         xlims=(0,20000),
         xlabel="Frequency (Hz)",
         ylabel="Amplitude",
+        size=(400,300),
+        dpi=40,
         # yscale=:log10,
         title="Power Density Spectrum"))
     # display(Plots.plot(periodogram.freq,title="Frequency"))
@@ -258,6 +262,8 @@ function plot_Spectrogram(signal,framework,fs)
             # xscale=:log10,
             ylabel="Frequency",
             yscale=:log10,
+            size=(400,300),
+            dpi=40,
             title="Spectrogram")
         )
     end
@@ -279,7 +285,7 @@ function get_one_MFCC(slice_file_name, fold, MFCCs)
     # palette = Plots.palette(:Blues, numcep)
     palette = Plots.palette(:Blues)
     # display(Plots.heatmap(this_MFCC', fill=true, c=palette, title=string("MFCC's for ",path_to_wav[length(path_to_wav)-22:length(path_to_wav)]), xlabel="Time (ms)", ylabel="MFCC"))
-    display(Plots.heatmap(this_MFCC', fill=true, title=string("MFCC's for ",path_to_wav[length(path_to_wav)-22:length(path_to_wav)]), xlabel="Time (ms)", ylabel="MFCC"))
+    display(Plots.heatmap(this_MFCC', fill=true, title=string("MFCC's for ",path_to_wav[length(path_to_wav)-22:length(path_to_wav)]), size=(400,300), dpi=40, xlabel="Time (ms)", ylabel="MFCC"))
     println("MFCC matrix:")
     println(string(size(this_MFCC)[1]," x ",size(this_MFCC)[2]," = ", length(this_MFCC)))
     return this_MFCC, length(this_MFCC)

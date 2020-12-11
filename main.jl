@@ -10,6 +10,8 @@ using RecursiveArrayTools
 using BSON:  @save, @load
 using CUDAapi
 using MLDatasets
+using RandomNumbers
+using Random
 # if has_cuda()		# Check if CUDA is available
 #     @info "CUDA is on"
 #     import CuArrays		# If CUDA is available, import CuArrays
@@ -53,7 +55,9 @@ meta_DF, classes, path_to_wav_files, path_to_metadata = importUrbanSound8K()
 # Generate MFCC's (directly from wav files):
 # generate_mfccs(meta_trainingDF, meta_testDF, path_to_wav_files) #only run if not saved previously
 
+# @time begin
 # generate_mfccs(meta_DF, path_to_wav_files) #only run if not saved previously
+# end
 # wag
 ##################################################################
 # Load previously generated MFCC's:
@@ -63,58 +67,111 @@ meta_DF, classes, path_to_wav_files, path_to_metadata = importUrbanSound8K()
 # test_mfccs = load(string(path_to_wav_files,"test_mfccs.jld") # array of test mfccs
 # train_mfccs = load(string(path_to_wav_files,"train_mfccs.jld") # array of training mfccs
 
+println("Loading pre-generated MFCC's..")
+# @time begin
 # MFCCs = load(string(path_to_wav_files,"MFCCs.jld"))
 # MFCCs = load(string(path_to_wav_files,"MFCCs_small.jld"))
+# MFCCs = load(string(path_to_wav_files,"MFCCs_small_augmented.jld"))
+# MFCCs = load(string(path_to_wav_files,"MFCCs_augmented_numcep_50.jld"))
+# MFCCs = load(string(path_to_wav_files,"MFCCs_augmented_numcep_13.jld")) #16 mins
 # nrOfMFCCs = length(MFCCs)-5
+# end
 
 # println(size(test_mfccs.values))
 # println(size(test_mfccs.keys)) #weird
 # println(test_mfccs.keys) #weird
 # println(pairs(MFCCs))
-println(string(length(pairs(MFCCs))-5, " key/value pairs (mfcc's) generated"))
+println(string(length(pairs(MFCCs))-5, " MFCCs (key/value pairs) generated"))
 # println(MFCCs.keys[1:10])
 # println(length(MFCCs.keys))
 # println(MFCCs["101729-0-0-36.wav"])
 # wag
 
 fourSecond_metaDF = DataFrame()
-# unsupported_compression_code_indices = [4804,6247,6248,6249,6250,6251,6252,6253,8339]
-unsupported_compression_code_indices = [608]
+unsupported_compression_code_indices = [4804,6247,6248,6249,6250,6251,6252,6253,8339]
+# unsupported_compression_code_indices = [608]
+# augmented_unsupported_compression_code_indices = [(608-1)*4,(608-1)*4+1,(608-1)*4+2,(608-1)*4+3] #shifted for augmented data
+augmented_unsupported_compression_code_indices = []
+for i in unsupported_compression_code_indices
+    push!(augmented_unsupported_compression_code_indices, (i-1)*5+1)
+    push!(augmented_unsupported_compression_code_indices, (i-1)*5+2)
+    push!(augmented_unsupported_compression_code_indices, (i-1)*5+3)
+    push!(augmented_unsupported_compression_code_indices, (i-1)*5+4)
+    push!(augmented_unsupported_compression_code_indices, (i-1)*5+5)
+end
+println(augmented_unsupported_compression_code_indices)
+# wag
+
 global indexCounter = 0
 global nr_of_notFourSeconds = 0
-for row in eachrow(meta_DF)[8732-1000:8732]
+global nr_of_unsupported = 0
+for row in eachrow(meta_DF)#[8732-1000:8732]
     global indexCounter += 1
     # println(row)
     # println(row."end"-row.start)
-    if (row."end"-row.start == 4) && !(indexCounter in unsupported_compression_code_indices)
+    if (row."end"-row.start == 4)
         global nr_of_notFourSeconds += 1
-        push!(fourSecond_metaDF, row)
+    else
+        if !(indexCounter in unsupported_compression_code_indices)
+            global nr_of_unsupported += 1
+        else
+            push!(fourSecond_metaDF, row)
+        end
     end
 end
+println(string(nr_of_notFourSeconds, " samples removed because not 4 seconds long"))
+println(string(nr_of_unsupported, " samples removed because unsupported compression code"))
 # println(fourSecond_metaDF)
+println(size(fourSecond_metaDF))
+println(nrow(fourSecond_metaDF))
+wag
 percentageLoss = (1-size(fourSecond_metaDF)[1]/size(meta_DF)[1])*100 # the % of all samples lost by only considering those that are 4 seconds long
 println(string(percentageLoss, " % of samples discarded (4 second condition + unsupported compression code error)"))
 print(size(fourSecond_metaDF))
 print(" out of ")
 print(size(meta_DF))
 println(" remaining")
+wag
 
 ##################################################################
 #Split train test data sets
-test_fold = 2 # fold (out of 1->10) to be used as the test set in this iteration
+test_fold = 1 # fold (out of 1->10) to be used as the test set in this iteration
+
 test_mfccs = []
 train_mfccs = []
+
 test_metaDF = DataFrame()
 train_metaDF = DataFrame()
+
 println("Splitting training and test data & labels:")
-println(string("Test fold = ", test_fold))
+println(string("(Test fold = ", test_fold, ")"))
+
 for row in eachrow(fourSecond_metaDF)
+    # println(typeof(MFCCs))
     mfcc = MFCCs[row.slice_file_name]
+    shifted_left_2 = MFCCs[string(row.slice_file_name[1:length(row.slice_file_name)-4],"_shift_left_2.wav")]
+    shifted_left_1 = MFCCs[string(row.slice_file_name[1:length(row.slice_file_name)-4],"_shift_left_1.wav")]
+    shifted_right_1 = MFCCs[string(row.slice_file_name[1:length(row.slice_file_name)-4],"_shift_right_1.wav")]
+    shifted_right_2 = MFCCs[string(row.slice_file_name[1:length(row.slice_file_name)-4],"_shift_right_2.wav")]
+    # println("Hey")
+    # wag
     if row.fold == test_fold
-        push!(test_mfccs, mfcc)
+        push!(test_mfccs, mfcc') #just push the original mfcc for testing purposes
         push!(test_metaDF, row)
     else
-        push!(train_mfccs, mfcc)
+        push!(train_mfccs, mfcc')
+        push!(train_metaDF, row)
+        
+        push!(train_mfccs, shifted_left_2')
+        push!(train_metaDF, row)
+        
+        push!(train_mfccs, shifted_left_1')
+        push!(train_metaDF, row)
+        
+        push!(train_mfccs, shifted_right_1')
+        push!(train_metaDF, row)
+        
+        push!(train_mfccs, shifted_right_2')
         push!(train_metaDF, row)
     end
 end
@@ -122,10 +179,24 @@ end
 println("Training data:")
 println(size(train_mfccs))
 println(size(train_metaDF))
+# println(first(train_metaDF, 5))
+# println(last(train_metaDF, 5))
+# println(size(1:nrow(train_metaDF)))
+# println(shuffle(1:nrow(train_metaDF)))
+# wag
+shuffled_indices = shuffle(1:nrow(train_metaDF))
+# println(shuffled_indices[1:5])
+train_mfccs = train_mfccs[shuffled_indices]
+train_metaDF = train_metaDF[shuffled_indices, :]
+# println(first(train_metaDF, 5))
+# println(last(train_metaDF, 5))
+# println(shuffled_indices[1:5])
+# wag
+
 println("Test data:")
 println(size(test_mfccs))
 println(size(test_metaDF))
-# wag
+wag
 
 
 
@@ -137,10 +208,11 @@ println(size(test_metaDF))
 ##################################################################
 #Do some investigation on a specific sample:
 
-index = rand(1:size(test_metaDF)[1])
-global slice_file_name = test_metaDF.slice_file_name[index]
-global fold = test_metaDF.fold[index]
-global class = test_metaDF.class[index]
+# index = rand(1:size(test_metaDF)[1])
+index = 10
+global slice_file_name = train_metaDF.slice_file_name[index]
+global fold = train_metaDF.fold[index]
+global class = train_metaDF.class[index]
 # okay = 0
 # while okay == 0
 #     index = rand(1:size(fourSecond_metaDF)[1])
@@ -157,7 +229,7 @@ global class = test_metaDF.class[index]
 # end
 
 # random_MFCC, sizeOfInput = get_one_MFCC(slice_file_name, fold, MFCCs) # get the specified value from the dictionary of MFCC's
-sizeOfInput = 398*13 # = 5174
+# sizeOfInput = 398*13 # = 5174
 sizeOfInput = 100*13 # 1300
 println(sizeOfInput)
 println(class)
@@ -187,40 +259,35 @@ nclasses = length(classes)
 
 # CONV:
 model = Chain(
-    Conv((5,5), 1 => 24, relu),
-    MaxPool((4,1)),
+    Conv((5,5), 1 => 24, relu), # (96,9)
+    MaxPool((4,2)), # (24,5)
+
+    # Conv((1,1), 24 => 48, relu), # (24,5)
     
-    Conv((5,5), 24 => 48, relu),
-    # MaxPool((4,1)),
+    Conv((3,3), 24 => 48, relu), # (22,3)
+    MaxPool((4,2)), # (7,3)
     
-    # Conv((5,5), 48 => 48, pad=(1,1), relu),
-    # MaxPool((4,2)),
+    Conv((3,3), 48 => 48, relu), # (5,5)
+    # MaxPool((4,1)), # (5,5)
+    # AdaptiveMaxPool((2,2)),
 
     flatten,
-    # Dense(64,10)
-    Dense(4800,10)
-
-    #########################################################
-    # # First convolution, operating upon a 28x28 image
-    # Conv((3, 3), 1=>16, pad=(1,1), relu),
-    # MaxPool((2,2)),
-
-    # # Second convolution, operating upon a 14x14 image
-    # Conv((3, 3), 16=>32, pad=(1,1), relu),
-    # MaxPool((2,2)),
-
-    # # Third convolution, operating upon a 7x7 image
-    # Conv((3, 3), 32=>32, pad=(1,1), relu),
-    # MaxPool((2,2)),
-
-    # # Reshape 3d tensor into a 2d one using `Flux.flatten`, at this point it should be (3, 3, 32, N)
-    # flatten,
-    # Dense(289, 10)
+    Dropout(0.5),
+    # Dense(1008,512,relu),
+    # Dropout(0.5),
+    # Dense(512,128,relu),
+    # Dropout(0.5),
+    # Dense(128,64,relu),
+    # Dropout(0.5),
+    Dense(64,32,relu),
+    Dropout(0.5),
+    Dense(32,10),
+    softmax
 ) |> gpu
 
 # println(Flux.outdims(model, (28,28)))
-# println(Flux.outdims(model, (100,13)))
-# wag
+println(Flux.outdims(model, (100,13)))
+wag
 
 
 # println(size(x))
@@ -255,6 +322,8 @@ global train_incorrect_size_indices = []
 global train_indices = []
 for mfcc in train_mfccs
     global counter += 1
+    # println(size(mfcc))
+    # wag
     if size(mfcc) == (398, 13)
         # mfcc = collect(Iterators.flatten(mfcc))
         mfcc = Flux.normalise(mfcc, dims=1) #normalise
@@ -339,6 +408,7 @@ training_data = flattened_train_mfccs
 # println(size(training_data[1]))
 # wag
 println(size(training_data))
+# wag
 println(size(training_data[1][1]))
 # wag
 # sizeOfTraining = size(training_data)[5]
@@ -351,6 +421,7 @@ println(string(sizeOfTraining), " = NR OF TRAINING SAMPLES")
 # Get labels
 
 train_labels = train_metaDF.class#[train_indices]
+println(train_labels[10])
 one_Second_train_labels = []
 for label in train_labels
     for i in 1:4
@@ -359,6 +430,17 @@ for label in train_labels
 end
 # println(one_Second_train_labels)
 train_labels = one_Second_train_labels
+# println(train_labels[9*4+1:9*4+1+3])
+
+filenames = train_metaDF.slice_file_name
+# println(filenames[1:5])
+one_second_filenames = []
+for filename in filenames
+    for i in 1:4
+        push!(one_second_filenames, filename)
+    end
+end
+println(one_second_filenames[1:20])
 # wag
 # println(train_isnan_indices)
 # println(unique(train_isnan_indices))
@@ -599,7 +681,12 @@ println(typeof(training_data[1][1]))
 
 array_of_tuples = []
 for i in 1:sizeOfTraining
+    # println(typeof(training_data[i]))
+    training_data[i] = Float32.(training_data[i])
+    # println(typeof(training_data[i]))
+    # wag
     tuple = (training_data[i], train_labels[:,i])
+    # tuple = (training_data[i], train_labels[:,i], one_second_filenames[i])
     # println(typeof(tuple))
     # println(tuple)
     # println(size(tuple[1]))
@@ -652,7 +739,26 @@ println(train_labels[1])
 # # println(length(test_data[1]))
 # wag
 
-test_set = [(test_data,test_labels)]
+# test_set = [(test_data,test_labels)]
+array_of_tuples = []
+for i in 1:sizeOfTest
+    # println(typeof(training_data[i]))
+    # println(test_labels[:,i])
+    # println(train_labels[:,i])
+    # wag
+    this_test_mfcc = Float32.(test_data[i][1])
+    # println(typeof(training_data[i]))
+    # wag
+    tuple = (this_test_mfcc, test_labels[:,i])
+    # tuple = (training_data[i], train_labels[:,i], one_second_filenames[i])
+    # println(typeof(tuple))
+    # println(tuple)
+    # println(size(tuple[1]))
+    push!(array_of_tuples, tuple)
+    # println(array_of_tuples)
+    # wag
+end
+test_set = array_of_tuples
 # test_set = (test_data,test_labels)
 # test_set = zip(test_data,test_labels)
 # println(size(test_data))
@@ -727,205 +833,215 @@ println(string(predictionBefore, " (ANOTHER PREDICTION BEFORE TRAINING)"))
 println(string("(",onecold(predictionBefore, classes),")"))
 display(Plots.bar(classes, predictionBefore, size=(400,300), dpi=40, title="ALSO BEFORE TRAINING", ylims=(0,1), xrotation=45, legend=:topright))
 
+# function avg_loss(data, model)
+#     total_loss = 0
+#     sizeOfData = size(data)[1]
+#     # println(sizeOfData)
+#     # wag
+#     for (x,y) in data
+#         # println(size(x))
+#         # println(size(x)[1])
+#         # println(y)
+#         # this_prediction = model(x)
+#         # println(this_prediction)
+
+#         # augment(x) = x .+ gpu(0.1f0*randn(eltype(x), size(x)))
+#         # thisLoss = Flux.logitcrossentropy(model(augment(x)), y)
+#         # println(thisLoss)
+
+#         thisLoss = Flux.mse(model(x),y)
+#         # println(thisLoss)
+
+#         total_loss += thisLoss
+#         # println(total_loss)
+#         # wag
+#     end
+#     avg_total_loss = total_loss/sizeOfData
+#     # println(avg_total_loss)
+#     # wag
+#     return avg_total_loss
+# end
+
+
 # wag
 
-sizeOfData = sizeOfTraining
 
-println(sizeOfData)
+# function accuracy(data, model)
+#     acc = 0
+#     correct_predictions = 0
+#     for (x,y) in data
+#         # println(size(x))
+#         # println(size(y))
+#         if onecold(model(x),classes)[1] == onecold(y,classes)
+#             correct_predictions += 1
+#             # wag
+#         end
+#         # acc += sum(onecold(cpu(model(x))) .== onecold(cpu(y)))*1 / size(x,2)
+#         # println(onecold(cpu(model(x)))[1])
+#         # println(onecold(cpu(y))[1])
+#         # println(onecold(cpu(model(x)))[1] .== onecold(cpu(y))[1])
+#         # println(sum(onecold(cpu(model(x))) .== onecold(cpu(y))))
+#         # println(size(x)[2])
+#         # println(length(data))
+#         # wag
+#         acc = correct_predictions / size(data)[1]
+#         # println(acc)
+#         # println(acc/length(data))
+#         # wag
+#     end
+#     # acc/length(data) # retarded? Note that length(data) always = 1, ffs?
+#     acc
+# end
 
-loss(x,y) = Flux.logitcrossentropy(model(x), y)
 
-ps = Flux.params(model)
+penalty() = sum(abs2, model.W) + sum(abs2, model.b)
+# sqnorm(x) = sum(abs2, x)
+# penalty(model) = sum(sqnorm, params(model))
 
-ƞ = 0.001
+# loss(x,y) = Flux.logitcrossentropy(model(x), y) + penalty(model)
+# loss(x,y) = Flux.logitcrossentropy(model(x), y)
+
+# loss(x,y) = Flux.mse(model(x), y) + penalty()
+# loss(x,y) = Flux.mse(model(x), y) + sum(sqnorm(x), params(model))
+loss(x,y) = Flux.mse(model(x), y)
+
+ƞ = 5e-5
+# ƞ = 1e-4
 optimiser = Flux.Optimise.ADAM(ƞ)
+ps = params(model)
 
-# Flux.@epochs 2 sssssssssssss
-println(size(training_set))
-for (x,y) in training_set
-    # x = Float32.(x)
-    println(size(test_input))
-    println(size(another_test_input))
-    println(size(x))
-    println(size(y))
-    wag
-    global loss_train = 0
-    global amount_with_nans = 0
-    for i in 1:sizeOfData
-        # println(i)
-        this_flat_mfcc = x[:,i] #input mfcc
-        this_label = y[:,i] #(correct class)
+global training_losses = []
+global training_accs = []
+global test_accs = []
 
-        # println(this_flat_mfcc[5170:5174])
-        # println(findmax(this_flat_mfcc))
-        # println(findmin(this_flat_mfcc))
-        # println(Flux.normalize(this_flat_mfcc[1:20]))
-        # wag
+function myTrain!(loss, ps, training_set, test_set, optimiser)
+    @time begin
+        # println(size(training_set))
+        # [9*4+1:9*4+1+3]
+        # augment(x) = x .+ gpu(0.1f0*randn(eltype(x), size(x)))
+        # loss(x,y) = Flux.logitcrossentropy(model(augment(x)), y)
+        # loss(x,y) = Flux.mse(model(x), y)
+        # for (x,y, f) in training_set[9*4+1:9*4+1+3]
+        total_loss_train = 0
+        correct_training_predictions = 0
+        for d in training_set#[9*4+1:9*4+1+3]
+            if onecold(model(d[1]),classes)[1] == onecold(d[2],classes)
+                correct_training_predictions += 1
+                # wag
+            end
+            # training_set[:,1] = Float32.(training_set[:,1])
+            # println(size(training_set))
+            # println(size(training_set[1][1]))
+            # println(typeof(training_set[1][1]))
+            # println(training_set[1][1][1:10])
+            # wag
+            # x = Float32.(x)
+            # println(size(test_input))
+            # println(size(another_test_input))
+            # println(size(x))
+            # println(size(y))
+            # wag
+            # thisLoss = loss(x,y)
+            # this_prediction = model(x)
+            # println("this Prediction:")
+            # println(this_prediction)
+            # println(onecold(this_prediction,classes))
+            # println("Real Answer:")
+            # println(y)
+            # println(onecold(y,classes))
+            # println("Filename:")
+            # println(f)
+            # thisLoss = Flux.logitcrossentropy(this_prediction, y)
+            # println("This loss:")
+            # println(thisLoss)
+            # thisLoss = loss(d...)
+            # println(this_loss)
+            
+            # println("total_loss_train:")
+            # println(total_loss_train)
 
-        # println(size(this_flat_mfcc))
-        # println(typeof(this_flat_mfcc))
-        # println(this_flat_mfcc[5174])
-        # println(this_flat_mfcc)
-        # println(test_input)
-        # wag
+            local training_loss
+            # ps = params(model)
+            # println(size(ps[11]))
+            # println("Old parameters:")
+            # println(ps[11][1:10])
+            # println(ps[12])
+            # wag
+            gs = gradient(ps) do
+                # total_loss_train
+                training_loss = loss(d...)
+                # println(training_loss)
+                # println("here")
+                total_loss_train += training_loss
+                # println(total_loss_train)
+                # wag
+                return training_loss
+            end
 
-        # println(model(test_input))
-        # println(model(this_flat_mfcc))
-        # wag
-        
-        this_prediction = model(this_flat_mfcc)
-        # println(this_prediction)
-        # println(typeof(this_prediction))
-        # println(size(this_prediction))
-        # println(this_prediction[1])
-        # println(this_prediction[10])
-        # wag
-        if any(isnan,this_prediction)
-            println("NaN value(s) detected...")
-            println(string("Skipping (not predicting class and calculating loss for) mfcc nr ", i, " in training set"))
-            sleep(2)
-            global amount_with_nans += 1
-            # break
-        else
-            # println(size(this_label))
-            # println(typeof(this_label))
-            # println(this_label)
-    
-            # loss(x,y) = Flux.Losses.mse(model(x), y)
-    
-            # loss = Flux.Losses.mse(model(this_flat_mfcc), this_label)
-            # loss = Flux.Losses.logitcrossentropy(model(this_flat_mfcc), this_label)
-            loss = Flux.Losses.logitcrossentropy(this_prediction, this_label)
-            # println(loss)
-    
-            global loss_train += loss
-            # println(loss_train)
+            # println(gs)
+            # println("here")
+            # println(typeof(gs))
+            # println(gs)
+            Flux.update!(optimiser,ps,gs)
+            # println("Updated parameters:")
+            # println(ps[11][1:10])
             # wag
         end
-    end
-    println()
-    println(loss_train)
-    println(string(sizeOfData, " values considered for training"))
-    global loss_train /= sizeOfData
-    println("AVERAGE LOSS OVER ALL TRAINING DATA:")
-    println(loss_train)
-    println(string(amount_with_nans, " skipped due to NaN values.."))
-
-    gs = gradient(params(model)) do
-        loss_train
-    end
-    println(typeof(gs))
-    println(gs)
-    Flux.update!(optimiser,params(model),gs)
-    # wag
-end
-
-
-# wag
-
-function loss_all(data, model, sizeOfData)
-    loss = 0f0
-    # println(typeof(data))
-    # println(size(data))
-    # println(typeof(data[1]))
-
-    #Node values
-    ps = params(model)
-    # println()
-    # println("Nodes:")
-    # println(size(ps[2]))
-    # println(ps[2])
-    # println(size(ps[4]))
-    # println(ps[4])
-    # print(size(ps[6]))
-    # println(" (output layer size, and below it's node values):")
-    # println(ps[6])
-    
-    #Weights
-    # println()
-    # println("Weights:")
-    
-    # println()
-    # println("Weights connecting 1st layer with 2nd layer's 1st node (some of them):")
-    # println(size(ps[1]))
-    # println(ps[1][1,:][5140:5174]) # all weights connecting 1st layer with 2nd layer's 1st node
-    
-    # println()
-    # println("Weights between 2nd and 3rd layer:")
-    # println(findmax(ps[3][:,:]))
-    # println(findmin(ps[3][:,:]))
-    
-    # println()
-    # println("Weights between 3rd and output layer:")
-    # println(findmax(ps[5][:,:]))
-    # println(findmin(ps[5][:,:]))
-
-    # println()
-    # println("All weight matrices:")
-    # println(size(ps[1]))
-    # println(size(ps[3]))
-    # println(size(ps[5]))
-    # wag
-    global amount_with_nans = 0
-    loss = 0
-    for (x,y) in data
-        # x = Float32.(x)
-        # println(sizeOfData)
         # wag
-        for i in 1:sizeOfData
-            # println(i)
-            this_flat_mfcc = x[:,i]
-            # println(this_flat_mfcc[5170:5174])
-            # println(Flux.normalize(this_flat_mfcc[1:20]))
-            this_label = y[:,i] #(correct_answer)
-            # println(this_label)
-            # wag
+        # println(string(sizeOfData, " values considered for training"))
+        train_accuracy = correct_training_predictions/sizeOfTraining
+        println("Training accuracy")
+        println(train_accuracy)
+        push!(training_accs, train_accuracy)
 
-            # println(size(this_flat_mfcc))
-            # println(typeof(this_flat_mfcc))
-            # println(this_flat_mfcc[5174])
-            # println(this_flat_mfcc)
-            # println(test_input)
-            # wag
-            # println(model(test_input))
-            # println(model(this_flat_mfcc))
-            # wag
-            
-            this_prediction = model(this_flat_mfcc)
-            # println(this_prediction)
-            # println(typeof(this_prediction))
-            # println(size(this_prediction))
-            # println(this_prediction[1])
-            # println(this_prediction[10])
-            # wag
-
-            # println(size(this_label))
-            # println(this_label)
-            
-            if any(isnan,this_prediction)
-                println("NaN value(s) detected...")
-                println(string("Skipping (not predicting class and calculating loss for) mfcc nr ", i, " in training set"))
-                sleep(2)
-                global amount_with_nans += 1
-                # break
-            else
-                loss += Flux.logitcrossentropy(this_prediction, this_label) #first part of calculating the average loss
-                # loss = Flux.mse(model(x),y)
+        correct_test_predictions = 0
+        for (x,y) in test_set
+            if onecold(model(x),classes)[1] == onecold(y,classes)
+                correct_test_predictions += 1
             end
         end
-        # println(string(sizeOfData, " values considered for training"))
-        # loss_train /= sizeOfData
-        # println("AVERAGE LOSS OVER ALL TRAINING DATA:")
-        # println(loss_train)
-        # println(string(amount_with_nans, " skipped due to NaN values.."))
+        test_accuracy = correct_test_predictions/sizeOfTest
+        println("Test accuracy")
+        println(test_accuracy)
+        push!(test_accs, test_accuracy)
+        
+        # @show accuracy((training_set), model)
+        # @show accuracy((test_set), model)
+        
+        total_loss_train /= sizeOfTraining
+        print("Average training loss = ")
+        println(total_loss_train)
+        push!(training_losses, total_loss_train)
+        # println(training_losses)
         # wag
+        # @show(avg_loss(training_set, model))
+        # @show(avg_loss(training_set[9*4+1:9*4+1+3], model))
     end
-    # l/length(data) # retarded? Note that length(data) always = 1, ffs?
-    # println(length(data))
-    # wag
-    # "###############################"
-    loss/sizeOfData # complete the calculation of average loss
 end
+
+@time begin
+Flux.@epochs 30 myTrain!(loss, ps, training_set, test_set, optimiser)
+end
+
+display(Plots.plot(training_losses, xlabel="Epochs", title="Training losses", size=(400,300), dpi=40, legend=:topleft))
+
+# display(Plots.plot(training_accs, xlabel="Epochs", title="Training Accuracy", size=(400,300), dpi=40, ylims=(0,1), legend=:topleft))
+
+display(Plots.plot([training_accs,test_accs], xlabel="Epochs", title="ACCURACY", size=(400,300), dpi=40, ylims=(0,1), legend=:topleft, labels=["Training accuracy" "Test accuracy"]))
+
+println("END")
+wag
+
+
+
+
+
+
+
+
+
+
+
 
 
 # evalcb = () -> @show(loss_all(training_set, model, sizeOfTraining))
@@ -1029,7 +1145,7 @@ println(typeof(training_set[2796][2]))
 
 # wag
 
-Flux.@epochs 50 Flux.Optimise.train!(loss, ps, training_set, optimiser,
+Flux.@epochs 100 Flux.Optimise.train!(loss, ps, training_set, optimiser,
 cb = evalcb
 # cb = Flux.throttle(() -> println("training"), 2)
 # cb = Flux.throttle(evalcb, 5)
@@ -1045,32 +1161,6 @@ cb = evalcb
 #     # push!(train_accuracy, accuracy)
 #   end
 )
-
-function accuracy(data, model)
-    acc = 0
-    for (x,y) in data
-        # println(size(x))
-        # println(size(y))
-        # acc += sum(onecold(cpu(model(x))) .== onecold(cpu(y)))*1 / size(x,2)
-        # println(onecold(cpu(model(x)))[1])
-        # println(onecold(cpu(y))[1])
-        # println(onecold(cpu(model(x)))[1] .== onecold(cpu(y))[1])
-        # println(sum(onecold(cpu(model(x))) .== onecold(cpu(y))))
-        # println(size(x)[2])
-        # println(length(data))
-        # wag
-        acc = sum(onecold(cpu(model(x))) .== onecold(cpu(y))) / size(x)[2]
-        # println(acc)
-        # println(acc/length(data))
-        # wag
-    end
-    # acc/length(data) # retarded? Note that length(data) always = 1, ffs?
-    acc
-end
-
-@show accuracy(training_set, model)
-
-@show accuracy(test_set, model)
 
 # wag
 # weights = Flux.params(model)

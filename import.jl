@@ -116,21 +116,31 @@ function generate_mfccs(meta_DF, path_to_wav_files)
     # wag
     excluded_counter = 0
     index = 0
-    unsupported_compression_code_indices = [608]
-    # unsupported_compression_code_indices = [4804,6247,6248,6249,6250,6251,6252,6253,8339] #real
-    for row in eachrow(meta_DF)[8732-1000:8732]
+    unsupported_compression_code_indices = [4804,6247,6248,6249,6250,6251,6252,6253,8339] #real
+    # unsupported_compression_code_indices = [608] #small
+    for row in eachrow(meta_DF)#[8732-1000:8732]
+        # index = rand(1:nrow(meta_DF))
+        # index = 765
+        # row = meta_DF[index, :]
         index += 1
         println(index)
+        # println(row.slice_file_name)
+        # if row.slice_file_name == "74364-8-1-26.wav"
+        #     wag
+        # end
         # println(row)
         path_to_wav = string(path_to_wav_files,"fold",row.fold,"/",row.slice_file_name)
         # println(path_to_wav)
         # println(typeof(path_to_wav)) # it's a string
         if index in unsupported_compression_code_indices
-            println(string("index = ", index, " THEREFORE SKIPPING"))
+            println(string("index = ", index, " (unsupported compression code, THEREFORE SKIPPING)"))
+            println(index)
+            # wag
         else
             signal, fs = WAV.wavread(path_to_wav)
-            MFCC_output = MFCC.mfcc(signal[:,1], fs; numcep=13)
-            mfcc = MFCC_output[1]
+            NumCep = 13
+            MFCC_output = MFCC.mfcc(signal[:,1], fs; numcep=NumCep)
+            mfcc = reverse(MFCC_output[1]', dims = 1)
             # println(typeof(mfcc))
             # wag
             # spectrogram = MFCC_output[2]
@@ -138,7 +148,59 @@ function generate_mfccs(meta_DF, path_to_wav_files)
     
             # if size(mfcc) == (398, 13)
             if row."end"-row.start == 4
+                # println(row.slice_file_name)
+                
+                shift_factor = 0.4
+                shift_left_2 = circshift(mfcc,(0,-ceil(shift_factor*size(mfcc)[1])))
+                push!(mfccs, string(row.slice_file_name[1:length(row.slice_file_name)-4],"_shift_left_2.wav") => shift_left_2)
+                
+
+                # palette = Plots.palette(:Blues)
+                # display(Plots.heatmap(shift_left_2, fill=true, title=string(path_to_wav[65:length(path_to_wav)], "(", row.class, ")"), size=(400,300), dpi=40, xlabel="Time (ms)", ylabel="MFCC"))
+                # println("MFCC matrix:")
+                # println(string(size(shift_left_2)[1]," x ",size(shift_left_2)[2]," = ", length(shift_left_2)))
+                
+                shift_factor = 0.2
+                shift_left_1 = circshift(mfcc,(0,-ceil(shift_factor*size(mfcc)[1])))
+                push!(mfccs, string(row.slice_file_name[1:length(row.slice_file_name)-4],"_shift_left_1.wav") => shift_left_1)
+                # println(size(shift_left_1))
+
+                # palette = Plots.palette(:Blues)
+                # display(Plots.heatmap(shift_left_1, fill=true, title=string(path_to_wav[65:length(path_to_wav)], "(", row.class, ")"), size=(400,300), dpi=40, xlabel="Time (ms)", ylabel="MFCC"))
+                # println("MFCC matrix:")
+                # println(string(size(shift_left_1)[1]," x ",size(shift_left_1)[2]," = ", length(shift_left_1)))
+
                 push!(mfccs, row.slice_file_name => mfcc)
+                # println(row.slice_file_name)
+                # println(size(mfcc))
+                # println(typeof(mfccs))
+                # wag
+
+                # palette = Plots.palette(:Blues)
+                # display(Plots.heatmap(mfcc, fill=true, title=string(path_to_wav[65:length(path_to_wav)], "(", row.class, ")"), size=(400,300), dpi=40, xlabel="Time (ms)", ylabel="MFCC"))
+                # println("MFCC matrix:")
+                # println(string(size(mfcc)[1]," x ",size(mfcc)[2]," = ", length(mfcc)))
+
+                shift_factor = 0.2
+                shift_right_1 = circshift(mfcc,(0,ceil(shift_factor*size(mfcc)[1])))
+                push!(mfccs, string(row.slice_file_name[1:length(row.slice_file_name)-4],"_shift_right_1.wav") => shift_right_1)
+
+                # palette = Plots.palette(:Blues)
+                # display(Plots.heatmap(shift_right_1, fill=true, title=string(path_to_wav[65:length(path_to_wav)], "(", row.class, ")"), size=(400,300), dpi=40, xlabel="Time (ms)", ylabel="MFCC"))
+                # println("MFCC matrix:")
+                # println(string(size(shift_right_1)[1]," x ",size(shift_right_1)[2]," = ", length(shift_right_1)))
+
+                shift_factor = 0.4
+                shift_right_2 = circshift(mfcc,(0,ceil(shift_factor*size(mfcc)[1])))
+                push!(mfccs, string(row.slice_file_name[1:length(row.slice_file_name)-4],"_shift_right_2.wav") => shift_right_2)
+
+                # palette = Plots.palette(:Blues)
+                # display(Plots.heatmap(shift_right_2, fill=true, title=string(path_to_wav[65:length(path_to_wav)], "(", row.class, ")"), size=(400,300), dpi=40, xlabel="Time (ms)", ylabel="MFCC"))
+                # println("MFCC matrix:")
+                # println(string(size(shift_right_2)[1]," x ",size(shift_right_2)[2]," = ", length(shift_right_2)))
+                
+                # wag
+
                 # println(string(row.slice_file_name," added"))
             else
                 excluded_counter += 1
@@ -165,7 +227,10 @@ function generate_mfccs(meta_DF, path_to_wav_files)
     # println(mfccs.values) #doesn't work -> LoadError: type Dict has no field values
     # wag
     # save(string(path_to_wav_files,"MFCCs.jld"), mfccs)
-    save(string(path_to_wav_files,"MFCCs_small.jld"), mfccs)
+    save(string(path_to_wav_files,"MFCCs_augmented_numcep_13.jld"), mfccs)
+    # save(string(path_to_wav_files,"MFCCs_augmented_numcep_50.jld"), mfccs)
+    # save(string(path_to_wav_files,"MFCCs_small.jld"), mfccs)
+    # save(string(path_to_wav_files,"MFCCs_small_augmented.jld"), mfccs)
 end
 
 
